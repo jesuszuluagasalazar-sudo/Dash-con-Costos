@@ -60,7 +60,7 @@ export function TabHT({ onClickIssue, onClickUser }) {
 
       <div className="detail-table-card">
         <h3><Icon name="list_alt" size={16} style={{marginRight:6,verticalAlign:'middle',color:'#4A0099'}}/>Issues Detallados — HT Backend</h3>
-        <IssueTable issues={issues} onClickIssue={onClickIssue} onClickUser={onClickUser} />
+        <IssueTable issues={issues} onClickIssue={onClickIssue} onClickUser={onClickUser} showLinkedIssues={true} />
       </div>
     </div>
   );

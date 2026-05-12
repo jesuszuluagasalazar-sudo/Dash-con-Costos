@@ -2,7 +2,18 @@ import { useDashboardStore } from '../store/dashboardStore';
 import { Icon } from './ui/Icon';
 import { AutocompleteSelect } from './ui/AutocompleteSelect';
 
-export function Header() {
+const TABS = [
+  { id: 'resumen', label: 'Resumen Ejecutivo',      icon: 'dashboard' },
+  { id: 'hf',      label: 'Historias Funcionales',  icon: 'menu_book' },
+  { id: 'hab',     label: 'Habilitadores',          icon: 'settings' },
+  { id: 'ht',      label: 'HT Backend',             icon: 'build' },
+  { id: 'def',     label: 'Defectos',               icon: 'bug_report' },
+  { id: 'mej',     label: 'Mejoras',                icon: 'auto_awesome' },
+  { id: 'mod',     label: 'Modificadas',            icon: 'edit_note' },
+  { id: 'costos',  label: 'Costos y Rentabilidad',  icon: 'analytics' },
+];
+
+export function Header({ activeTab, onTabChange }) {
   const {
     activeFilter, setActiveFilter,
     lastUpdated,
@@ -219,6 +230,28 @@ export function Header() {
           </div>
         )}
       </div>
+
+      {/* ── Tabs de navegación ── */}
+      <nav className="tabs-nav" role="tablist" style={{ 
+        position: 'sticky', 
+        top: 0, 
+        zIndex: 100,
+        background: '#fff',
+        borderBottom: '2px solid #EDE9FE',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+      }}>
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            id={`tab-${t.id}`}
+            className={`tab-btn${activeTab === t.id ? ' active' : ''}`}
+            onClick={() => onTabChange(t.id)}
+          >
+            <Icon name={t.icon} size={16} style={{ marginRight: 6, verticalAlign: 'middle' }} />
+            {t.label}
+          </button>
+        ))}
+      </nav>
     </>
   );
 }

@@ -5,7 +5,7 @@ import { formatDate } from '../../utils/jira';
 
 const PAGE_SIZE = 25;
 
-export function IssueTable({ issues = [], onClickIssue, onClickUser }) {
+export function IssueTable({ issues = [], onClickIssue, onClickUser, showLinkedIssues = false }) {
   const [search,  setSearch]  = useState('');
   const [page,    setPage]    = useState(1);
   const [sortCol, setSortCol] = useState(null);
@@ -61,6 +61,57 @@ export function IssueTable({ issues = [], onClickIssue, onClickUser }) {
     { key: 'updated',  label: 'Actualizado' },
   ];
 
+  if (showLinkedIssues) {
+    cols.push({ key: 'linked', label: 'CD Arquitectura' });
+  }
+
+  // Componente para mostrar issues enlazados
+  const LinkedIssuesCell = ({ issuelinks }) => {
+    if (!issuelinks || issuelinks.length === 0) return <span style={{ color: '#aaa' }}>—</span>;
+    
+    const linked = issuelinks
+      .map(link => {
+        // Puede ser inwardIssue o outwardIssue
+        const issue = link.inwardIssue || link.outwardIssue;
+        if (!issue) return null;
+        
+        // Filtrar solo issues de tipo "Diseño de Arquitectura CD"
+        const issueType = issue.fields?.issuetype?.name || '';
+        if (issueType !== 'Diseño de Arquitectura CD') return null;
+        
+        return {
+          key: issue.key,
+          status: issue.fields?.status?.name || '—',
+          type: link.type?.name || '—'
+        };
+      })
+      .filter(Boolean);
+
+    if (linked.length === 0) return <span style={{ color: '#aaa' }}>—</span>;
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {linked.map((l, idx) => (
+          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <a 
+              href="#" 
+              onClick={e => { e.preventDefault(); onClickIssue?.(l.key); }}
+              style={{ 
+                fontSize: '0.75rem', 
+                fontWeight: 600, 
+                color: '#7C3AED',
+                textDecoration: 'none'
+              }}
+            >
+              {l.key}
+            </a>
+            <StatusBadge status={l.status} />
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div>
       <div className="detail-table-toolbar">
@@ -90,7 +141,7 @@ export function IssueTable({ issues = [], onClickIssue, onClickUser }) {
         </thead>
         <tbody>
           {slice.length === 0 ? (
-            <tr><td colSpan={7} style={{ textAlign: 'center', color: '#aaa', padding: '30px' }}>Sin resultados</td></tr>
+            <tr><td colSpan={showLinkedIssues ? 8 : 7} style={{ textAlign: 'center', color: '#aaa', padding: '30px' }}>Sin resultados</td></tr>
           ) : slice.map(i => (
             <tr key={i.key}>
               <td className="issue-key">
@@ -111,6 +162,9 @@ export function IssueTable({ issues = [], onClickIssue, onClickUser }) {
               </td>
               <td className="date-cell">{formatDate(i.fields?.created)}</td>
               <td className="date-cell">{formatDate(i.fields?.updated)}</td>
+              {showLinkedIssues && (
+                <td><LinkedIssuesCell issuelinks={i.fields?.issuelinks} /></td>
+              )}
             </tr>
           ))}
         </tbody>
